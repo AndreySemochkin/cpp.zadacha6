@@ -17,10 +17,28 @@ BinarySearchTree::~BinarySearchTree() {
     deleteTree(header);
 }
 
+// копируем
+void copy(Element *pElement, Element *parent, bool isLeft) {
+    if (pElement != nullptr) {
+        Element *element = new Element(pElement->key, parent);
+        element->value = pElement->value;
+        if (parent != nullptr) {
+            if (isLeft) {
+                parent->left = element;
+            } else {
+                parent->right = element;
+            }
+        }
+        copy(pElement->left, element, true);
+        copy(pElement->right, element, false);
+    }
+}
+
+
 // оператор присваивания (lvalue-ссылка на экземпляр этого же класса)
 BinarySearchTree &BinarySearchTree::operator=(const BinarySearchTree &other) {
     deleteTree(header);
-    // todo add copy
+    copy(other.header, nullptr, true);
     return *this;
 }
 
@@ -88,7 +106,7 @@ void BinarySearchTree::del(std::string key) {
         // есть слово в словаре
         if (pElement->value > 1) {
             // уменьшаем счетчик
-            pElement->value--;            
+            pElement->value--;
         } else {
             // удаляем узел дерева
             Element *parent = pElement->parent;
@@ -130,7 +148,7 @@ int BinarySearchTree::countAll() {
     return countValue(header);
 }
 
-// вывод
+// вывод дерева (как хранится)
 void print(std::ostream &os, Element *element, int level, std::string info) {
     if (element != nullptr) {
         for (int i = 0; i < level; i++) os << "    ";
@@ -140,10 +158,26 @@ void print(std::ostream &os, Element *element, int level, std::string info) {
     }
 }
 
-// operator вывода
-std::ostream &operator<<(std::ostream &os, const BinarySearchTree &tree) {
-    // todo - change
-    print(os, tree.header, 0, "header");
-    return os;
+// выводит слова в алфавитном порядке с указанием количества вхождений
+void outLeft(std::ostream &os, Element *element) {
+    if (element != nullptr) {
+        if (element->left != nullptr) {
+            outLeft(os, element->left);
+        }
+        os << element->key << " - " << element->value << std::endl;
+        if (element->right != nullptr) {
+            outLeft(os, element->right);
+        }
+    }
 }
 
+// operator вывода (выводит слова в алфавитном порядке с указанием количества вхождений)
+std::ostream &operator<<(std::ostream &os, const BinarySearchTree &tree) {
+    // todo - change
+    os << std::endl;
+    print(os, tree.header, 0, "header");
+
+    os << std::endl;
+    outLeft(os, tree.header);
+    return os;
+}
