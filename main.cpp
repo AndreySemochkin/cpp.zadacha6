@@ -20,6 +20,17 @@ int main() {
 
     std::cout << "\n" << tree << "\n";
 
-//  std::cin.get();
+    std::cout << "find(11) - " << tree.find("11") << "\n";
+    std::cout << "find(6) - " << tree.find("6") << "\n";
+
+    std::cout << "countAll() -  " << tree.countAll() << "\n";
+
+    std::cout << "\n";
+    tree.del("7");
+    std::cout << "del(7) " << tree << "\n";
+
+    std::cout << "countAll() -  " << tree.countAll() << "\n";
+
+    std::cin.get();
     return 0;
 }
