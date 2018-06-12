@@ -4,7 +4,7 @@ BinarySearchTree::BinarySearchTree() {
     header = nullptr;
 }
 
-// удалить потдерево
+// удалить поддерево
 void deleteTree(Element *element) {
     if  (element != nullptr) {
         deleteTree(element->left);
@@ -38,7 +38,12 @@ void copy(Element *pElement, Element *parent, bool isLeft) {
 // оператор присваивания (lvalue-ссылка на экземпляр этого же класса)
 BinarySearchTree &BinarySearchTree::operator=(const BinarySearchTree &other) {
     deleteTree(header);
-    copy(other.header, nullptr, true);
+	if (other.header != nullptr) {
+		header = new Element(other.header->key, nullptr);
+		header->value = other.header->value;
+		copy(other.header->left, header, true);
+		copy(other.header->right, header, false);
+	}
     return *this;
 }
 
@@ -99,6 +104,17 @@ void BinarySearchTree::add(std::string key) {
     }
 }
 
+// найти максимальный элемент (элемент не может быть == nullptr)
+Element *maxElement(Element *pElement) {
+    return (pElement->right == nullptr) ? pElement : maxElement(pElement->right);
+}
+
+// найти минимальный элемент (элемент не может быть == nullptr)
+Element *minElement(Element *pElement) {
+    return (pElement->left == nullptr) ? pElement : maxElement(pElement->left);
+}
+
+
 // удалить слово из словаря
 void BinarySearchTree::del(std::string key) {
     Element *pElement = findElement(key, header);
@@ -112,9 +128,9 @@ void BinarySearchTree::del(std::string key) {
             Element *parent = pElement->parent;
             Element *pElementNew;
             if (pElement->left != nullptr) {
-                pElementNew = pElement->left;
+                pElementNew = maxElement(pElement->left);
             } else if (pElement->right != nullptr) {
-                pElementNew = pElement->right;
+                pElementNew = minElement(pElement->right);
             } else {
                 // нет детей
                 pElementNew = nullptr;
@@ -134,7 +150,7 @@ void BinarySearchTree::del(std::string key) {
     }
 }
 
-// количество слов потдерева
+// количество слов поддерева
 int countValue(Element *element) {
     return (element == nullptr)
            ? 0
@@ -153,8 +169,8 @@ void print(std::ostream &os, Element *element, int level, std::string info) {
     if (element != nullptr) {
         for (int i = 0; i < level; i++) os << "    ";
         os << info << " " << element->key << " - " << element->value << std::endl;
-        print(os, element->left, level + 1, "left");
-        print(os, element->right, level + 1, "right");
+        print(os, element->left, level + 1, "left:");
+        print(os, element->right, level + 1, "right:");
     }
 }
 
@@ -173,9 +189,8 @@ void outLeft(std::ostream &os, Element *element) {
 
 // operator вывода (выводит слова в алфавитном порядке с указанием количества вхождений)
 std::ostream &operator<<(std::ostream &os, const BinarySearchTree &tree) {
-    // todo - change
     os << std::endl;
-    print(os, tree.header, 0, "header");
+    print(os, tree.header, 0, "header:");
 
     os << std::endl;
     outLeft(os, tree.header);
