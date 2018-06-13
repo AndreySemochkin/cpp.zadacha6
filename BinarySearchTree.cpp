@@ -114,38 +114,90 @@ Element *minElement(Element *pElement) {
     return (pElement->left == nullptr) ? pElement : maxElement(pElement->left);
 }
 
-
 // удалить слово из словаря
 void BinarySearchTree::del(std::string key) {
-    Element *pElement = findElement(key, header);
-    if (pElement != nullptr) {
+    Element *pElementDel = findElement(key, header);
+    if (pElementDel != nullptr) {
         // есть слово в словаре
-        if (pElement->value > 1) {
+        if (pElementDel->value > 1) {
             // уменьшаем счетчик
-            pElement->value--;
+            pElementDel->value--;
         } else {
             // удаляем узел дерева
-            Element *parent = pElement->parent;
+            // указатель на родительский узел
+            Element *pElementParent = pElementDel->parent;
+            // указатель на ребенка удаляемого элемента
+            Element *pElementChieldLeft = pElementDel->left;
+            Element *pElementChieldRight = pElementDel->right;
+
+            // указатель на узел, который перемещается на данное место в дереве
+            // это потомок удаляемого узла с наиболее близким значением (с лева - наибольшим, с права - наименьшим)
             Element *pElementNew;
-            if (pElement->left != nullptr) {
-                pElementNew = maxElement(pElement->left);
-            } else if (pElement->right != nullptr) {
-                pElementNew = minElement(pElement->right);
+            // указатель на ребенка pElementNew
+            Element *pElementNewChield;
+            if (pElementChieldLeft != nullptr) {
+                pElementNew = maxElement(pElementDel->left);
+                pElementNewChield = pElementNew->left;
+            } else if (pElementChieldRight != nullptr) {
+                pElementNew = minElement(pElementDel->right);
+                pElementNewChield = pElementNew->right;
             } else {
                 // нет детей
                 pElementNew = nullptr;
             }
-            if (pElementNew != nullptr) {
-                pElementNew->parent = parent;
-            }
-            if (parent != nullptr) {
-                if (parent->left == pElement) {
-                    parent->left = pElementNew;
+            // меняем ребенка у родителя
+            if (pElementParent != nullptr) {
+                if (pElementParent->left == pElementDel) {
+                    pElementParent->left = pElementNew;
                 } else {
-                    parent->right = pElementNew;
+                    pElementParent->right = pElementNew;
                 }
             }
-            delete pElement;
+            if (pElementNew != nullptr) {
+                // у удаляемого узла есть дети - переставляем узлы
+
+                // указатель на родительский узел pElementNew
+                Element *pElementNewParent = pElementNew->parent;
+
+                // меняем родителя
+                pElementNew->parent = pElementParent;
+
+                // на место удаляемого элемента перемещаем не его ребенка
+                if (pElementChieldLeft != pElementNew && pElementChieldRight != pElementNew) {
+                    // меняем родителя у ребенка удаляемого элемента
+                    if (pElementChieldLeft != nullptr) {
+                        pElementChieldLeft->parent = pElementNew;
+                        pElementNew->left = pElementChieldLeft;
+                    }
+                    if (pElementChieldRight != nullptr) {
+                        pElementChieldRight->parent = pElementNew;
+                        pElementNew->right = pElementChieldRight;
+                    }
+
+                    // прописываем нового ребенка
+                    if (isLeft) {
+                        pElementNew->left = pElementChieldLeft;
+                    } else {
+                        pElementNew->right = pElementChieldLeft;
+                    }
+
+                    // у нового узла был ребенок - переставляем его
+                    if (pElementNewChield != nullptr) {
+                        // меняем родителя
+                        pElementNewChield->parent = pElementNewParent;
+                    }
+
+                    // меняем ребенка у родителя
+                    if (pElementNewParent != nullptr) {
+                        if (isLeft) {
+                            pElementNewParent->left = pElementNewChield;
+                        } else {
+                            pElementNewParent->right = pElementNewChield;
+                        }
+                    }
+                }
+            }
+            delete pElementDel;
         }
     }
 }
