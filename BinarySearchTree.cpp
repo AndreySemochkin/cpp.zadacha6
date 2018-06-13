@@ -6,7 +6,7 @@ BinarySearchTree::BinarySearchTree() {
 
 // удалить поддерево
 void deleteTree(Element *element) {
-    if  (element != nullptr) {
+    if (element != nullptr) {
         deleteTree(element->left);
         deleteTree(element->right);
         delete element;
@@ -38,12 +38,12 @@ void copy(Element *pElement, Element *parent, bool isLeft) {
 // оператор присваивания (lvalue-ссылка на экземпляр этого же класса)
 BinarySearchTree &BinarySearchTree::operator=(const BinarySearchTree &other) {
     deleteTree(header);
-	if (other.header != nullptr) {
-		header = new Element(other.header->key, nullptr);
-		header->value = other.header->value;
-		copy(other.header->left, header, true);
-		copy(other.header->right, header, false);
-	}
+    if (other.header != nullptr) {
+        header = new Element(other.header->key, nullptr);
+        header->value = other.header->value;
+        copy(other.header->left, header, true);
+        copy(other.header->right, header, false);
+    }
     return *this;
 }
 
@@ -61,7 +61,7 @@ Element *findElement(std::string key, Element *pElement) {
         return nullptr;
     }
     if (key == pElement->key) {
-        return  pElement;
+        return pElement;
     }
     return findElement(key, (key < pElement->key) ? pElement->left : pElement->right);
 }
@@ -114,6 +114,33 @@ Element *minElement(Element *pElement) {
     return (pElement->left == nullptr) ? pElement : maxElement(pElement->left);
 }
 
+// удаляем узел дерева
+void deleteElement(Element *pElementDel) {
+    Element *parent = pElementDel->parent;
+    Element *pElementNew;
+    if (pElementDel->left != nullptr) {
+        pElementNew = pElementDel->left;
+    } else if (pElementDel->right != nullptr) {
+        pElementNew = pElementDel->right;
+    } else {
+        // нет детей
+        pElementNew = nullptr;
+    }
+
+    if (pElementNew != nullptr) {
+        pElementNew->parent = parent;
+    }
+    if (parent != nullptr) {
+        if (parent->left == pElementDel) {
+            parent->left = pElementNew;
+        } else {
+            parent->right = pElementNew;
+        }
+    }
+    delete pElementDel;
+}
+
+
 // удалить слово из словаря
 void BinarySearchTree::del(std::string key) {
     Element *pElementDel = findElement(key, header);
@@ -123,81 +150,26 @@ void BinarySearchTree::del(std::string key) {
             // уменьшаем счетчик
             pElementDel->value--;
         } else {
-            // удаляем узел дерева
-            // указатель на родительский узел
-            Element *pElementParent = pElementDel->parent;
-            // указатель на ребенка удаляемого элемента
-            Element *pElementChieldLeft = pElementDel->left;
-            Element *pElementChieldRight = pElementDel->right;
+            // надо удалить узел дерева
 
-            // указатель на узел, который перемещается на данное место в дереве
+            // указатель на новый узел, который копируем на данное место в дереве
             // это потомок удаляемого узла с наиболее близким значением (с лева - наибольшим, с права - наименьшим)
             Element *pElementNew;
-            // указатель на ребенка pElementNew
-            Element *pElementNewChield;
-            if (pElementChieldLeft != nullptr) {
+            if (pElementDel->left != nullptr) {
                 pElementNew = maxElement(pElementDel->left);
-                pElementNewChield = pElementNew->left;
-            } else if (pElementChieldRight != nullptr) {
+            } else if (pElementDel->right != nullptr) {
                 pElementNew = minElement(pElementDel->right);
-                pElementNewChield = pElementNew->right;
             } else {
                 // нет детей
                 pElementNew = nullptr;
-            }
-            // меняем ребенка у родителя
-            if (pElementParent != nullptr) {
-                if (pElementParent->left == pElementDel) {
-                    pElementParent->left = pElementNew;
-                } else {
-                    pElementParent->right = pElementNew;
-                }
+                deleteElement(pElementDel);
             }
             if (pElementNew != nullptr) {
-                // у удаляемого узла есть дети - переставляем узлы
-
-                // указатель на родительский узел pElementNew
-                Element *pElementNewParent = pElementNew->parent;
-
-                // меняем родителя
-                pElementNew->parent = pElementParent;
-
-                // на место удаляемого элемента перемещаем не его ребенка
-                if (pElementChieldLeft != pElementNew && pElementChieldRight != pElementNew) {
-                    // меняем родителя у ребенка удаляемого элемента
-                    if (pElementChieldLeft != nullptr) {
-                        pElementChieldLeft->parent = pElementNew;
-                        pElementNew->left = pElementChieldLeft;
-                    }
-                    if (pElementChieldRight != nullptr) {
-                        pElementChieldRight->parent = pElementNew;
-                        pElementNew->right = pElementChieldRight;
-                    }
-
-                    // прописываем нового ребенка
-                    if (isLeft) {
-                        pElementNew->left = pElementChieldLeft;
-                    } else {
-                        pElementNew->right = pElementChieldLeft;
-                    }
-
-                    // у нового узла был ребенок - переставляем его
-                    if (pElementNewChield != nullptr) {
-                        // меняем родителя
-                        pElementNewChield->parent = pElementNewParent;
-                    }
-
-                    // меняем ребенка у родителя
-                    if (pElementNewParent != nullptr) {
-                        if (isLeft) {
-                            pElementNewParent->left = pElementNewChield;
-                        } else {
-                            pElementNewParent->right = pElementNewChield;
-                        }
-                    }
-                }
+                // копируем содержимое
+                pElementDel->key = pElementNew->key;
+                pElementDel->value = pElementNew->value;
+                deleteElement(pElementNew);
             }
-            delete pElementDel;
         }
     }
 }

@@ -17,17 +17,6 @@ int main() {
     tree.add("seven");
     tree.add("eight");
     tree.add("nine");
-//    tree.add("5");
-//    tree.add("3");
-//    tree.add("6");
-//    tree.add("1");
-//    tree.add("2");
-//    tree.add("4");
-//    tree.add("5");
-//    tree.add("6");
-//    tree.add("7");
-//    tree.add("8");
-//    tree.add("9");
 
 	std::cout << "\n" << tree << "\n";
 
@@ -40,9 +29,9 @@ int main() {
 	tree2 = tree;
 
 	std::cout << "\n";
-//	tree.del("seven");
+	tree.del("seven");
 	tree.del("one");
-//	tree.del("six");
+	tree.del("six");
 	std::cout << "del(seven) " << tree << "\n";
 	std::cout << "countAll() -  " << tree.countAll() << "\n";
 
